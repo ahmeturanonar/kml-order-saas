@@ -1,0 +1,305 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum OrderStatus {
+  PENDING
+  DOWNLOADED
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  CANCELLED
+  FAILED
+  REFUNDED
+}
+
+enum CreditTransactionType {
+  PURCHASE
+  ORDER_CHARGE
+  REFUND
+  ADJUSTMENT
+}
+
+enum CreditSource {
+  USER
+  ADMIN
+  SYSTEM
+  STRIPE
+}
+
+enum NotificationType {
+  ORDER_STATUS
+  PAYMENT
+  CREDIT
+  SYSTEM
+}
+
+model User {
+  id                  String                 @id @default(cuid())
+  name                String
+  email               String                 @unique
+  emailVerified       DateTime?
+  passwordHash        String
+  role                Role                   @default(CUSTOMER)
+  status              UserStatus             @default(ACTIVE)
+  creditBalance       Int                    @default(0)
+  disabledAt          DateTime?
+  createdAt           DateTime               @default(now())
+  updatedAt           DateTime               @updatedAt
+  adminProfile        Admin?
+  orders              Order[]
+  payments            Payment[]
+  creditTransactions  CreditTransaction[]
+  managedCreditTransactions CreditTransaction[] @relation("CreditTransactionSourceUser")
+  uploadedFiles       UploadedFile[]
+  generatedFiles      GeneratedFile[]
+  notifications       Notification[]
+  passwordResetTokens PasswordResetToken[]
+  accounts            Account[]
+  sessions            Session[]
+  authoredOrderNotes  OrderNote[]            @relation("OrderNoteAuthor")
+  changedOrderStatuses OrderStatusHistory[]  @relation("OrderStatusChangedBy")
+  updatedSettings     AppSetting[]           @relation("AppSettingUpdatedBy")
+  auditLogs           AuditLog[]             @relation("AuditLogActor")
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Order {
+  id                     String    @id @default(cuid())
+  sequenceNumber         Int       @unique @default(autoincrement())
+  orderNumber            String    @unique
+  userId                 String
+  status                 OrderStatus @default(PENDING)
+  creditCharged          Int
+  remainingBalanceAfter  Int
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  downloadedAt           DateTime?
+  completedAt            DateTime?
+  cancelledAt            DateTime?
+  user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  uploadedFile           UploadedFile?
+  generatedFile          GeneratedFile?
+  creditTransactions     CreditTransaction[]
+  statusHistory          OrderStatusHistory[]
+  notes                  OrderNote[]
+
+  @@index([userId, status, createdAt])
+}
+
+model UploadedFile {
+  id               String   @id @default(cuid())
+  userId           String
+  orderId          String   @unique
+  fileName         String
+  originalFileName String
+  filePath         String
+  mimeType         String
+  fileSize         Int
+  fileHash         String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order            Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([userId, fileHash])
+  @@index([userId, createdAt])
+}
+
+model GeneratedFile {
+  id               String   @id @default(cuid())
+  userId           String
+  orderId          String   @unique
+  fileName         String
+  originalFileName String
+  filePath         String
+  mimeType         String
+  fileSize         Int
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order            Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model Payment {
+  id                    String        @id @default(cuid())
+  userId                String
+  stripeSessionId       String?       @unique
+  stripePaymentIntentId String?       @unique
+  amount                Int
+  packageName           String
+  status                PaymentStatus @default(PENDING)
+  receiptUrl            String?
+  createdAt             DateTime      @default(now())
+  updatedAt             DateTime      @updatedAt
+  paidAt                DateTime?
+  cancelledAt           DateTime?
+  user                  User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  creditTransactions    CreditTransaction[]
+
+  @@index([userId, status, createdAt])
+}
+
+model CreditTransaction {
+  id           String                @id @default(cuid())
+  userId       String
+  orderId      String?
+  paymentId    String?
+  type         CreditTransactionType
+  amount       Int
+  description  String
+  balanceAfter Int
+  createdAt    DateTime              @default(now())
+  user         User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  order        Order?                @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  payment      Payment?              @relation(fields: [paymentId], references: [id], onDelete: SetNull)
+  sourceType   CreditSource          @default(SYSTEM)
+  sourceUserId String?
+  sourceUser   User?                 @relation("CreditTransactionSourceUser", fields: [sourceUserId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([sourceUserId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType @default(SYSTEM)
+  title     String
+  message   String
+  linkPath  String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model AppSetting {
+  id              String   @id @default(cuid())
+  key             String   @unique
+  value           String
+  updatedByUserId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  updatedBy       User?    @relation("AppSettingUpdatedBy", fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([updatedByUserId])
+}
+
+model AuditLog {
+  id          String   @id @default(cuid())
+  actorUserId String?
+  action      String
+  targetType  String
+  targetId    String?
+  targetLabel String
+  metadata    Json?
+  createdAt   DateTime @default(now())
+  actor       User?    @relation("AuditLogActor", fields: [actorUserId], references: [id], onDelete: SetNull)
+
+  @@index([actorUserId, createdAt])
+  @@index([targetType, createdAt])
+}
+
+model OrderStatusHistory {
+  id              String      @id @default(cuid())
+  orderId         String
+  fromStatus      OrderStatus?
+  toStatus        OrderStatus
+  note            String?
+  changedByUserId String?
+  createdAt       DateTime    @default(now())
+  order           Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  changedBy       User?       @relation("OrderStatusChangedBy", fields: [changedByUserId], references: [id], onDelete: SetNull)
+
+  @@index([orderId, createdAt])
+  @@index([changedByUserId])
+}
+
+model OrderNote {
+  id           String   @id @default(cuid())
+  orderId      String
+  authorUserId String?
+  body         String
+  createdAt    DateTime @default(now())
+  order        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  author       User?    @relation("OrderNoteAuthor", fields: [authorUserId], references: [id], onDelete: SetNull)
+
+  @@index([orderId, createdAt])
+  @@index([authorUserId])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, expiresAt])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
