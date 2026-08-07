@@ -8,6 +8,7 @@ import {
   Shield,
   Users,
 } from "lucide-react";
+import { AppShellMobileNav } from "@/components/app-shell-mobile-nav";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { SignOutButton } from "@/components/sign-out-button";
 import { cn } from "@/lib/utils";
@@ -152,18 +153,12 @@ export function AppShell({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col gap-6">
-          <header className="flex items-center justify-between rounded-[2rem] border border-slate-200/70 bg-white/85 px-5 py-4 shadow-xl shadow-slate-200/40 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80 dark:shadow-black/20 lg:hidden">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.3em] text-cyan-600">
-                Surfer KML SaaS
-              </p>
-              <p className="mt-1 text-base font-semibold text-slate-950 dark:text-white">{title}</p>
-            </div>
-            <div className="flex items-center gap-2">
-              <ThemeToggle />
-              <SignOutButton />
-            </div>
-          </header>
+          <AppShellMobileNav
+            title={title}
+            currentPath={currentPath}
+            userName={userName}
+            links={links.map((link) => ({ href: link.href, label: link.label }))}
+          />
 
           <main className="flex-1">{children}</main>
         </div>

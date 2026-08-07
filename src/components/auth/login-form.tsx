@@ -17,7 +17,7 @@ export function LoginForm() {
   const [isPending, startTransition] = useTransition();
 
   return (
-    <Card className="mx-auto w-full max-w-md space-y-6 p-8">
+    <Card className="mx-auto w-full max-w-md space-y-6 p-6 sm:p-8">
       <div className="space-y-2">
         <CardTitle>Giriş yap</CardTitle>
         <CardDescription>KML siparişlerinize ve kredi bakiyenize erişin.</CardDescription>
@@ -43,7 +43,7 @@ export function LoginForm() {
             }
 
             toast.success("Başarıyla giriş yapıldı.");
-            router.push("/dashboard");
+            router.push("/dashboard/orders");
             router.refresh();
           });
         }}
@@ -53,7 +53,7 @@ export function LoginForm() {
           <Input id="email" name="email" type="email" required />
         </div>
         <div className="space-y-2">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <Label htmlFor="password">Şifre</Label>
             <Link
               href="/forgot-password"

@@ -11,7 +11,7 @@ import {
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { recordAuditLog } from "@/lib/audit";
-import { applyCreditTransaction, createCreditTransaction } from "@/lib/credits";
+import { applyCreditTransaction } from "@/lib/credits";
 import { adminCreditEmailTemplate, orderEmailTemplate } from "@/lib/email-templates";
 import { logger } from "@/lib/logger";
 import { createNotification } from "@/lib/notifications";

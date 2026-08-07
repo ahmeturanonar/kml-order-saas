@@ -31,7 +31,7 @@ export function RegisterForm() {
   }, [state]);
 
   return (
-    <Card className="mx-auto w-full max-w-md space-y-6 p-8">
+    <Card className="mx-auto w-full max-w-md space-y-6 p-6 sm:p-8">
       <div className="space-y-2">
         <CardTitle>Hesabınızı oluşturun</CardTitle>
         <CardDescription>Kredi satın alın, KML dosyaları yükleyin ve siparişlerinizi takip edin.</CardDescription>

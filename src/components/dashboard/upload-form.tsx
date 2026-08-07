@@ -65,7 +65,7 @@ export function UploadForm({
           });
         }}
       >
-        <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-slate-300 px-6 py-10 text-center transition-colors hover:border-cyan-400 dark:border-slate-700 dark:hover:border-cyan-500">
+        <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-slate-300 px-4 py-8 text-center transition-colors hover:border-cyan-400 dark:border-slate-700 dark:hover:border-cyan-500 sm:px-6 sm:py-10">
           <UploadCloud className="size-8 text-cyan-500" />
           <div>
             <p className="font-medium text-slate-900 dark:text-white">Bir KML dosyasi secin</p>
@@ -87,7 +87,7 @@ export function UploadForm({
           <p className="text-sm font-medium text-rose-500">Yetersiz kredi.</p>
         ) : null}
 
-        <Button type="submit" disabled={creditBalance < price || isUploading}>
+        <Button className="w-full sm:w-auto" type="submit" disabled={creditBalance < price || isUploading}>
           {isUploading ? "Yukleniyor..." : "KML yukle"}
         </Button>
       </form>

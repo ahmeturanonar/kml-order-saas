@@ -56,20 +56,17 @@ function escapeCsvValue(value: string | number) {
 
 function buildCsvBuffer(results: Awaited<ReturnType<typeof lookupBatch>>) {
   const lines = [
-    ["lat", "lon", "elevation", "file", "pixel_x", "pixel_y"].join(","),
+    ["Enlem", "Boylam", "Metre"].join(","),
     ...results.map((result) =>
       [
         escapeCsvValue(result.lat),
         escapeCsvValue(result.lon),
         escapeCsvValue(result.elevation),
-        escapeCsvValue(result.file),
-        escapeCsvValue(result.pixel_x),
-        escapeCsvValue(result.pixel_y),
       ].join(","),
     ),
   ];
 
-  return Buffer.from(`${lines.join("\n")}\n`, "utf8");
+  return Buffer.from(`\uFEFF${lines.join("\n")}\n`, "utf8");
 }
 
 async function beginOrderProcessing(orderId: string): Promise<ProcessingOrder | null> {

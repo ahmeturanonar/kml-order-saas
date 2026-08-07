@@ -3,9 +3,10 @@ import { requireUser } from "@/lib/session";
 import { getKmlPrice } from "@/lib/settings";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { BuyCreditsCard } from "@/components/dashboard/buy-credits-card";
+import { OrderList } from "@/components/dashboard/order-list";
 import { UploadForm } from "@/components/dashboard/upload-form";
 import { StatCard } from "@/components/stat-card";
-import { OrderStatusBadge, PaymentStatusBadge } from "@/components/status-badge";
+import { PaymentStatusBadge } from "@/components/status-badge";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 
@@ -29,6 +30,9 @@ export default async function DashboardPage() {
     }),
     prisma.order.findMany({
       where: { userId: session.user.id },
+      include: {
+        generatedFile: true,
+      },
       orderBy: { createdAt: "desc" },
       take: 5,
     }),
@@ -45,17 +49,17 @@ export default async function DashboardPage() {
         <StatCard
           title="Mevcut kredi"
           value={formatCurrency(user.creditBalance)}
-          description="Yeni KML yüklemeleri için kullanılabilir bakiye."
+          description="Yeni KML yuklemeleri icin kullanilabilir bakiye."
         />
         <StatCard
-          title="KML fiyatı"
+          title="KML fiyati"
           value={formatCurrency(kmlPrice)}
-          description="Yüklenen her dosya için otomatik olarak tahsil edilir."
+          description="Yuklenen her dosya icin otomatik olarak tahsil edilir."
         />
         <StatCard
-          title="Toplam sipariş"
+          title="Toplam siparis"
           value={String(user._count.orders)}
-          description="Yüklediğiniz KML dosyalarından oluşturulan siparişler."
+          description="Yuklediginiz KML dosyalarindan olusturulan siparisler."
         />
       </section>
 
@@ -67,39 +71,18 @@ export default async function DashboardPage() {
       <section className="grid gap-6 xl:grid-cols-2">
         <Card>
           <div className="mb-4">
-            <CardTitle>Son siparişler</CardTitle>
-            <CardDescription>Son yüklediğiniz KML dosyaları ve durumları.</CardDescription>
+            <CardTitle>Son siparisler</CardTitle>
+            <CardDescription>Son yuklediginiz KML dosyalari ve durumlari.</CardDescription>
           </div>
-          <Table>
-            <THead>
-              <TR>
-                <TH>Sipariş</TH>
-                <TH>Tarih</TH>
-                <TH>Durum</TH>
-                <TH>Harcanan</TH>
-              </TR>
-            </THead>
-            <TBody>
-              {recentOrders.map((order) => (
-                <TR key={order.id}>
-                  <TD>{order.orderNumber}</TD>
-                  <TD>{formatDate(order.createdAt)}</TD>
-                  <TD>
-                    <OrderStatusBadge status={order.status} />
-                  </TD>
-                  <TD>{formatCurrency(order.creditCharged)}</TD>
-                </TR>
-              ))}
-            </TBody>
-          </Table>
+          <OrderList orders={recentOrders} />
         </Card>
 
         <Card>
           <div className="mb-4">
-            <CardTitle>Son ödemeler</CardTitle>
-            <CardDescription>Hesabınızdan yapılan son Stripe kredi satın alımları.</CardDescription>
+            <CardTitle>Son odemeler</CardTitle>
+            <CardDescription>Hesabinizdan yapilan son Stripe kredi satin alimlari.</CardDescription>
           </div>
-          <Table>
+          <Table className="min-w-[32rem]">
             <THead>
               <TR>
                 <TH>Paket</TH>
@@ -113,7 +96,9 @@ export default async function DashboardPage() {
                 <TR key={payment.id}>
                   <TD>{payment.packageName}</TD>
                   <TD>{formatDate(payment.createdAt)}</TD>
-                  <TD><PaymentStatusBadge status={payment.status} /></TD>
+                  <TD>
+                    <PaymentStatusBadge status={payment.status} />
+                  </TD>
                   <TD>{formatCurrency(payment.amount)}</TD>
                 </TR>
               ))}

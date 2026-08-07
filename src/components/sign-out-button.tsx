@@ -5,8 +5,9 @@ import { useTransition } from "react";
 import { signOut } from "next-auth/react";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
-export function SignOutButton() {
+export function SignOutButton({ className }: { className?: string }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -14,7 +15,7 @@ export function SignOutButton() {
     <Button
       type="button"
       variant="ghost"
-      className="justify-start"
+      className={cn("justify-start", className)}
       disabled={isPending}
       onClick={() =>
         startTransition(async () => {
