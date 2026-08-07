@@ -19,9 +19,9 @@ export function UploadForm({
   return (
     <Card className="space-y-5">
       <div>
-        <CardTitle>Yeni KML yükle</CardTitle>
+        <CardTitle>Yeni KML yukle</CardTitle>
         <CardDescription>
-          Her yükleme {price} TL&apos;dir. Desteklenen biçim: `.kml`, en fazla 50 MB.
+          Her yukleme {price} TL&apos;dir. Desteklenen bicim: `.kml`, en fazla 50 MB.
         </CardDescription>
       </div>
 
@@ -58,7 +58,7 @@ export function UploadForm({
                 window.location.reload();
               }, data.duplicateMessage ? 1500 : 800);
             } catch {
-              toast.error("Yükleme başarısız oldu. Lütfen tekrar deneyin.");
+              toast.error("Yukleme basarisiz oldu. Lutfen tekrar deneyin.");
             } finally {
               setIsUploading(false);
             }
@@ -68,9 +68,9 @@ export function UploadForm({
         <label className="flex cursor-pointer flex-col items-center justify-center gap-3 rounded-3xl border border-dashed border-slate-300 px-6 py-10 text-center transition-colors hover:border-cyan-400 dark:border-slate-700 dark:hover:border-cyan-500">
           <UploadCloud className="size-8 text-cyan-500" />
           <div>
-            <p className="font-medium text-slate-900 dark:text-white">Bir KML dosyası seçin</p>
+            <p className="font-medium text-slate-900 dark:text-white">Bir KML dosyasi secin</p>
             <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-              Dosyalar güvenle saklanır ve site tarafından asla otomatik olarak işlenmez.
+              Dosyalar guvenle saklanir ve sunucu tarafinda otomatik olarak islenir.
             </p>
           </div>
           <input
@@ -88,7 +88,7 @@ export function UploadForm({
         ) : null}
 
         <Button type="submit" disabled={creditBalance < price || isUploading}>
-          {isUploading ? "Yükleniyor..." : "KML yükle"}
+          {isUploading ? "Yukleniyor..." : "KML yukle"}
         </Button>
       </form>
     </Card>
