@@ -10,9 +10,8 @@ import { logger } from "@/lib/logger";
 import { createNotification } from "@/lib/notifications";
 import { findExistingStoredFile } from "@/lib/order-files";
 import { prisma } from "@/lib/prisma";
+import { buildGeneratedCsvBuffer, CSV_MIME_TYPE } from "@/lib/generated-csv";
 import { deleteStoredFile, saveGeneratedCsv } from "@/lib/storage";
-
-const CSV_MIME_TYPE = "text/csv; charset=utf-8";
 
 type ProcessingOrder = {
   id: string;
@@ -44,29 +43,14 @@ function normalizeErrorMessage(error: unknown) {
   return error.message.length > 500 ? `${error.message.slice(0, 497)}...` : error.message;
 }
 
-function escapeCsvValue(value: string | number) {
-  const normalized = String(value);
-
-  if (/[",\r\n]/.test(normalized)) {
-    return `"${normalized.replace(/"/g, "\"\"")}"`;
-  }
-
-  return normalized;
-}
-
 function buildCsvBuffer(results: Awaited<ReturnType<typeof lookupBatch>>) {
-  const lines = [
-    ["Enlem", "Boylam", "Metre"].join(","),
-    ...results.map((result) =>
-      [
-        escapeCsvValue(result.lat),
-        escapeCsvValue(result.lon),
-        escapeCsvValue(result.elevation),
-      ].join(","),
-    ),
-  ];
-
-  return Buffer.from(`\uFEFF${lines.join("\n")}\n`, "utf8");
+  return buildGeneratedCsvBuffer(
+    results.map((result) => ({
+      lat: result.lat,
+      lon: result.lon,
+      elevation: result.elevation,
+    })),
+  );
 }
 
 async function beginOrderProcessing(orderId: string): Promise<ProcessingOrder | null> {

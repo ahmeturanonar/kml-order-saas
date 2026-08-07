@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { recordAuditLog } from "@/lib/audit";
 import { assertDesktopAgentRequest } from "@/lib/desktop-agent";
 import { orderEmailTemplate } from "@/lib/email-templates";
+import { CSV_MIME_TYPE, normalizeGeneratedCsvBuffer } from "@/lib/generated-csv";
 import { logger } from "@/lib/logger";
 import { createNotification } from "@/lib/notifications";
 import { prisma } from "@/lib/prisma";
@@ -70,10 +71,11 @@ export async function POST(
       );
     }
 
-    const fileBuffer = Buffer.from(await file.arrayBuffer());
-    if (fileBuffer.byteLength === 0) {
+    const uploadedFileBuffer = Buffer.from(await file.arrayBuffer());
+    if (uploadedFileBuffer.byteLength === 0) {
       return NextResponse.json({ message: "CSV file is empty." }, { status: 400 });
     }
+    const fileBuffer = normalizeGeneratedCsvBuffer(uploadedFileBuffer);
 
     const originalBaseName = sanitizeBaseName(
       path.basename(order.uploadedFile.originalFileName, path.extname(order.uploadedFile.originalFileName)),
@@ -98,7 +100,7 @@ export async function POST(
           fileName: storedFileName,
           originalFileName,
           filePath: savedFilePath!,
-          mimeType: "text/csv; charset=utf-8",
+          mimeType: CSV_MIME_TYPE,
           fileSize: fileBuffer.byteLength,
         },
         create: {
@@ -107,7 +109,7 @@ export async function POST(
           fileName: storedFileName,
           originalFileName,
           filePath: savedFilePath!,
-          mimeType: "text/csv; charset=utf-8",
+          mimeType: CSV_MIME_TYPE,
           fileSize: fileBuffer.byteLength,
         },
       });

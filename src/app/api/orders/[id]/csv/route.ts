@@ -2,6 +2,7 @@ import fs from "node:fs/promises";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
+import { CSV_MIME_TYPE, normalizeGeneratedCsvBuffer } from "@/lib/generated-csv";
 import { logger } from "@/lib/logger";
 import { buildDownloadHeaders, findExistingStoredFile } from "@/lib/order-files";
 import { prisma } from "@/lib/prisma";
@@ -76,17 +77,18 @@ export async function GET(
     }
 
     const fileBuffer = await fs.readFile(fileLookup.resolvedPath);
+    const normalizedBuffer = normalizeGeneratedCsvBuffer(fileBuffer);
     const downloadName =
       order.generatedFile.originalFileName ||
       order.generatedFile.fileName ||
       `${order.orderNumber}.csv`;
 
-    return new NextResponse(fileBuffer, {
+    return new NextResponse(normalizedBuffer, {
       status: 200,
       headers: buildDownloadHeaders({
         downloadName,
-        mimeType: order.generatedFile.mimeType,
-        size: fileLookup.size,
+        mimeType: order.generatedFile.mimeType || CSV_MIME_TYPE,
+        size: normalizedBuffer.byteLength,
       }),
     });
   } catch (error) {
