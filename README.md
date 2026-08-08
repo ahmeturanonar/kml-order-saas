@@ -1,6 +1,6 @@
 # KML Order Management SaaS
 
-Production-ready SaaS web application for selling prepaid credits, collecting customer KML uploads, and managing manual Surfer-based delivery workflows.
+Production-ready web application for selling prepaid credits, collecting customer KML uploads, and managing elevation-processing workflows.
 
 Important: this platform **never processes KML files automatically**. It only stores uploaded files, tracks orders, manages payments, and lets the admin download files for manual work outside the website.
 
@@ -190,7 +190,7 @@ The database stores:
 4. Website creates an order with status `Pending`.
 5. Website deducts 50 credits.
 6. Admin downloads the KML.
-7. Admin processes the file manually in Surfer outside the site.
+7. Admin processes the file manually outside the site.
 8. Admin marks the order as `Processing`, `Completed`, or `Cancelled`.
 
 ## Stripe Setup

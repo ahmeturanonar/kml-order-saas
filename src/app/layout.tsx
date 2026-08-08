@@ -14,8 +14,12 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: "Surfer KML SaaS",
-  description: "Manuel Surfer iş akışları için kredi tabanlı KML yükleme ve sipariş yönetim platformu.",
+  title: {
+    default: "ATO Elevation",
+    template: "%s | ATO Elevation",
+  },
+  description: "KML dosyalarınızdan hassas yükseklik verileri alın.",
+  applicationName: "ATO Elevation",
 };
 
 export default function RootLayout({

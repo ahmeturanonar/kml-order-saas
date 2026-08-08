@@ -3,17 +3,17 @@ import { formatCurrency } from "@/lib/utils";
 function wrapEmail(title: string, body: string) {
   return `
     <div style="font-family:Arial,sans-serif;line-height:1.6;color:#0f172a;max-width:640px;margin:0 auto;padding:24px;">
-      <p style="font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#0891b2;margin:0 0 12px;">Surfer KML SaaS</p>
+      <p style="font-size:12px;letter-spacing:0.2em;text-transform:uppercase;color:#0891b2;margin:0 0 12px;">ATO Elevation</p>
       <h1 style="font-size:24px;margin:0 0 16px;">${title}</h1>
       ${body}
-      <p style="margin-top:24px;color:#475569;">Teşekkürler,<br />Surfer KML SaaS</p>
+      <p style="margin-top:24px;color:#475569;">Teşekkürler,<br />ATO Elevation</p>
     </div>
   `;
 }
 
 export function welcomeEmailTemplate(name: string) {
   return {
-    subject: "Surfer KML SaaS'a hoş geldiniz",
+    subject: "ATO Elevation'a hoş geldiniz",
     html: wrapEmail(
       "Aramıza hoş geldiniz",
       `<p>Merhaba ${name},</p><p>Hesabınız hazır. Artık kredi satın alabilir, KML dosyaları yükleyebilir ve sipariş ilerlemesini panelinizden takip edebilirsiniz.</p>`,

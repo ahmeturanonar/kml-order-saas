@@ -101,17 +101,16 @@ export function AppShell({
   children,
 }: AppShellProps) {
   return (
-    <div className="min-h-screen bg-[radial-gradient(circle_at_top_left,_rgba(6,182,212,0.15),_transparent_25%),radial-gradient(circle_at_bottom_right,_rgba(249,115,22,0.12),_transparent_30%)] dark:bg-[radial-gradient(circle_at_top_left,_rgba(6,182,212,0.1),_transparent_25%),radial-gradient(circle_at_bottom_right,_rgba(249,115,22,0.08),_transparent_30%),linear-gradient(to_bottom,_#020617,_#0f172a)]">
+    <div className="relative min-h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(34,211,238,0.12),_transparent_24%),radial-gradient(circle_at_bottom_right,_rgba(148,163,184,0.1),_transparent_30%),linear-gradient(180deg,_#07111f_0%,_#050b14_100%)]">
+      <div className="pointer-events-none absolute inset-0 opacity-[0.06] [background-image:linear-gradient(rgba(148,163,184,0.22)_1px,transparent_1px),linear-gradient(90deg,rgba(148,163,184,0.12)_1px,transparent_1px)] [background-size:54px_54px]" />
       <div className="mx-auto flex min-h-screen max-w-7xl gap-6 px-4 py-4 md:px-6">
-        <aside className="hidden w-72 shrink-0 rounded-[2rem] border border-slate-200/70 bg-white/85 p-6 shadow-2xl shadow-slate-200/40 backdrop-blur dark:border-slate-800 dark:bg-slate-950/80 dark:shadow-black/30 lg:flex lg:flex-col">
+        <aside className="hidden w-72 shrink-0 rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/20 backdrop-blur-xl lg:flex lg:flex-col">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-cyan-600">
-              Surfer KML SaaS
+            <p className="text-xs font-semibold uppercase tracking-[0.32em] text-cyan-200/80">
+              ATO Elevation
             </p>
-            <h1 className="mt-3 text-2xl font-semibold text-slate-950 dark:text-white">
-              {title}
-            </h1>
-            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">{description}</p>
+            <h1 className="mt-3 text-2xl font-semibold text-white">{title}</h1>
+            <p className="mt-2 text-sm text-slate-300">{description}</p>
           </div>
 
           <nav className="mt-10 space-y-2">
@@ -124,9 +123,7 @@ export function AppShell({
                   href={link.href}
                   className={cn(
                     "flex items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium transition-colors",
-                    isActive
-                      ? "bg-cyan-500 text-slate-950"
-                      : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-900",
+                    isActive ? "bg-cyan-300 text-slate-950" : "text-slate-300 hover:bg-white/5",
                   )}
                 >
                   {link.icon}
@@ -136,15 +133,11 @@ export function AppShell({
             })}
           </nav>
 
-          <div className="mt-auto space-y-4 rounded-3xl bg-slate-100/70 p-4 dark:bg-slate-900/80">
+          <div className="mt-auto space-y-4 rounded-3xl border border-white/10 bg-white/5 p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-                  Oturum açan
-                </p>
-                <p className="mt-1 text-sm font-semibold text-slate-900 dark:text-white">
-                  {userName}
-                </p>
+                <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Oturum açan</p>
+                <p className="mt-1 text-sm font-semibold text-white">{userName}</p>
               </div>
               <ThemeToggle />
             </div>
