@@ -3,6 +3,7 @@ import { requireUser } from "@/lib/session";
 import { getKmlPrice } from "@/lib/settings";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { BuyCreditsCard } from "@/components/dashboard/buy-credits-card";
+import { CouponRedemptionCard } from "@/components/dashboard/coupon-redemption-card";
 import { OrderList } from "@/components/dashboard/order-list";
 import { UploadForm } from "@/components/dashboard/upload-form";
 import { StatCard } from "@/components/stat-card";
@@ -65,7 +66,10 @@ export default async function DashboardPage() {
 
       <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
         <UploadForm creditBalance={user.creditBalance} price={kmlPrice} />
-        <BuyCreditsCard />
+        <div className="space-y-6">
+          <BuyCreditsCard />
+          <CouponRedemptionCard />
+        </div>
       </section>
 
       <section className="grid gap-6 xl:grid-cols-2">

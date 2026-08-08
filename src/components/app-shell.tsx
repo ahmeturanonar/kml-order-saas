@@ -5,6 +5,7 @@ import {
   LayoutDashboard,
   ReceiptText,
   Settings,
+  TicketPercent,
   Shield,
   Users,
 } from "lucide-react";
@@ -79,6 +80,11 @@ export const adminLinks = [
     href: "/admin/credits",
     label: "Krediler",
     icon: <ReceiptText className="size-4" />,
+  },
+  {
+    href: "/admin/coupons",
+    label: "Kuponlar",
+    icon: <TicketPercent className="size-4" />,
   },
   {
     href: "/admin/settings",

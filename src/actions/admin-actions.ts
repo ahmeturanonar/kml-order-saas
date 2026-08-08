@@ -53,6 +53,7 @@ function revalidateAdminPages() {
   revalidatePath("/admin/users");
   revalidatePath("/admin/payments");
   revalidatePath("/admin/credits");
+  revalidatePath("/admin/coupons");
   revalidatePath("/admin/settings");
   revalidatePath("/admin/audit");
 }
