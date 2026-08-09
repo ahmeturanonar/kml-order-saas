@@ -16,6 +16,8 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - kml-network
 
   app:
     build:
@@ -38,7 +40,13 @@ services:
       - "3000:3000"
     volumes:
       - uploads_data:/app/uploads
+    networks:
+      - kml-network
 
 volumes:
   postgres_data:
   uploads_data:
+
+networks:
+  kml-network:
+    external: true
