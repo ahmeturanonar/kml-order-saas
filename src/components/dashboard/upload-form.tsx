@@ -5,6 +5,11 @@ import { UploadCloud } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
+import {
+  DEFAULT_ELEVATION_RESOLUTION,
+  ELEVATION_RESOLUTION_OPTIONS,
+  type ElevationResolution,
+} from "@/lib/elevation-resolution";
 
 export function UploadForm({
   creditBalance,
@@ -15,6 +20,9 @@ export function UploadForm({
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [resolution, setResolution] = useState<ElevationResolution>(
+    DEFAULT_ELEVATION_RESOLUTION,
+  );
 
   return (
     <Card className="space-y-5">
@@ -54,6 +62,7 @@ export function UploadForm({
               }
               toast.success(data.message);
               formRef.current?.reset();
+              setResolution(DEFAULT_ELEVATION_RESOLUTION);
               window.setTimeout(() => {
                 window.location.reload();
               }, data.duplicateMessage ? 1500 : 800);
@@ -83,11 +92,60 @@ export function UploadForm({
           />
         </label>
 
+        <fieldset className="space-y-3">
+          <legend className="text-sm font-semibold text-slate-950 dark:text-white">
+            Elevation Cozunurlugu
+          </legend>
+          <div className="grid gap-3">
+            {ELEVATION_RESOLUTION_OPTIONS.map((option) => {
+              const checked = resolution === option.value;
+
+              return (
+                <label
+                  key={option.value}
+                  className={`flex cursor-pointer gap-3 rounded-2xl border px-4 py-4 transition-colors ${
+                    checked
+                      ? "border-cyan-400 bg-cyan-50/80 dark:border-cyan-500 dark:bg-cyan-500/10"
+                      : "border-slate-200 bg-white/70 hover:border-slate-300 dark:border-slate-800 dark:bg-slate-950/60 dark:hover:border-slate-700"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="resolution"
+                    value={option.value}
+                    checked={checked}
+                    onChange={() => setResolution(option.value)}
+                    className="mt-1 size-4 border-slate-300 text-cyan-500 focus:ring-cyan-500 dark:border-slate-600"
+                    disabled={creditBalance < price || isUploading}
+                  />
+                  <div className="space-y-1">
+                    <p className="font-medium text-slate-900 dark:text-white">
+                      {option.title} ({option.value})
+                    </p>
+                    <p className="text-sm text-slate-500 dark:text-slate-400">
+                      {option.description}
+                    </p>
+                    {option.detail ? (
+                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                        {option.detail}
+                      </p>
+                    ) : null}
+                  </div>
+                </label>
+              );
+            })}
+          </div>
+        </fieldset>
+
         {creditBalance < price ? (
           <p className="text-sm font-medium text-rose-500">Yetersiz kredi.</p>
         ) : null}
 
-        <Button className="w-full sm:w-auto" type="submit" disabled={creditBalance < price || isUploading}>
+        <Button
+          className="w-full sm:w-auto"
+          type="submit"
+          disabled={creditBalance < price || isUploading}
+        >
           {isUploading ? "Yukleniyor..." : "KML yukle"}
         </Button>
       </form>

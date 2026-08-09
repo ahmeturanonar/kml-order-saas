@@ -1,6 +1,9 @@
 import { OrderStatus } from "@prisma/client";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { OrderStatusBadge } from "@/components/status-badge";
+import {
+  ElevationResolutionBadge,
+  OrderStatusBadge,
+} from "@/components/status-badge";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
 
 type OrderListItem = {
@@ -8,6 +11,7 @@ type OrderListItem = {
   orderNumber: string;
   createdAt: Date | string;
   status: OrderStatus;
+  resolution?: string | null;
   creditCharged: number;
   remainingBalanceAfter?: number | null;
   uploadedFile?: {
@@ -63,8 +67,27 @@ function DetailItem({
       <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
         {label}
       </dt>
-      <dd className={breakValue ? "mt-1 break-all text-sm text-slate-900 dark:text-slate-100" : "mt-1 text-sm text-slate-900 dark:text-slate-100"}>
+      <dd
+        className={
+          breakValue
+            ? "mt-1 break-all text-sm text-slate-900 dark:text-slate-100"
+            : "mt-1 text-sm text-slate-900 dark:text-slate-100"
+        }
+      >
         {value}
+      </dd>
+    </div>
+  );
+}
+
+function ResolutionDetail({ resolution }: { resolution?: string | null }) {
+  return (
+    <div className="min-w-0 rounded-2xl bg-slate-50/80 p-3 dark:bg-slate-900/70">
+      <dt className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
+        Cozunurluk
+      </dt>
+      <dd className="mt-2">
+        <ElevationResolutionBadge resolution={resolution} />
       </dd>
     </div>
   );
@@ -84,12 +107,13 @@ export function OrderList({
   return (
     <>
       <div className="hidden md:block">
-        <Table className={isFull ? "min-w-[70rem]" : "min-w-[40rem]"}>
+        <Table className={isFull ? "min-w-[76rem]" : "min-w-[48rem]"}>
           <THead>
             <TR>
               <TH>Siparis</TH>
               {isFull ? <TH>Dosya adi</TH> : null}
               <TH>{isFull ? "Yuklenme tarihi" : "Tarih"}</TH>
+              <TH>Cozunurluk</TH>
               <TH>Durum</TH>
               <TH>Harcanan</TH>
               {isFull ? <TH>Kalan bakiye</TH> : null}
@@ -106,6 +130,9 @@ export function OrderList({
                   </TD>
                 ) : null}
                 <TD>{formatDate(order.createdAt)}</TD>
+                <TD>
+                  <ElevationResolutionBadge resolution={order.resolution} />
+                </TD>
                 <TD>
                   <OrderStatusBadge status={order.status} />
                 </TD>
@@ -158,6 +185,7 @@ export function OrderList({
                   label={isFull ? "Yuklenme tarihi" : "Tarih"}
                   value={formatDate(order.createdAt)}
                 />
+                <ResolutionDetail resolution={order.resolution} />
                 <DetailItem label="Harcanan kredi" value={formatCurrency(order.creditCharged)} />
                 {isFull ? (
                   <DetailItem

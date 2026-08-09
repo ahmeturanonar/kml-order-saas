@@ -97,6 +97,7 @@ model Order {
   sequenceNumber         Int       @unique @default(autoincrement())
   orderNumber            String    @unique
   userId                 String
+  resolution             String    @default("250m")
   status                 OrderStatus @default(PENDING)
   creditCharged          Int
   remainingBalanceAfter  Int

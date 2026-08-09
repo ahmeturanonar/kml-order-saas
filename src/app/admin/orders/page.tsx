@@ -2,7 +2,10 @@ import Link from "next/link";
 import { OrderStatus } from "@prisma/client";
 import { DeleteUploadForm } from "@/components/admin/delete-upload-form";
 import { OrderStatusForm } from "@/components/admin/order-status-form";
-import { OrderStatusBadge } from "@/components/status-badge";
+import {
+  ElevationResolutionBadge,
+  OrderStatusBadge,
+} from "@/components/status-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Table, TBody, TD, TH, THead, TR } from "@/components/ui/table";
@@ -17,12 +20,12 @@ type SearchParams = Promise<{
 }>;
 
 const FILTERS = [
-  { label: "Tümü", value: "" },
+  { label: "Tumu", value: "" },
   { label: "Bekliyor", value: OrderStatus.PENDING },
-  { label: "İndirildi", value: OrderStatus.DOWNLOADED },
-  { label: "İşleniyor", value: OrderStatus.PROCESSING },
-  { label: "Tamamlandı", value: OrderStatus.COMPLETED },
-  { label: "İptal edildi", value: OrderStatus.CANCELLED },
+  { label: "Indirildi", value: OrderStatus.DOWNLOADED },
+  { label: "Isleniyor", value: OrderStatus.PROCESSING },
+  { label: "Tamamlandi", value: OrderStatus.COMPLETED },
+  { label: "Iptal edildi", value: OrderStatus.CANCELLED },
 ];
 
 export default async function AdminOrdersPage({
@@ -42,7 +45,11 @@ export default async function AdminOrdersPage({
           OR: [
             { orderNumber: { contains: params.q, mode: "insensitive" as const } },
             { user: { name: { contains: params.q, mode: "insensitive" as const } } },
-            { uploadedFile: { originalFileName: { contains: params.q, mode: "insensitive" as const } } },
+            {
+              uploadedFile: {
+                originalFileName: { contains: params.q, mode: "insensitive" as const },
+              },
+            },
           ],
         }
       : {}),
@@ -67,18 +74,23 @@ export default async function AdminOrdersPage({
     <div className="space-y-6">
       <Card>
         <div className="mb-4">
-          <CardTitle>Sipariş ara</CardTitle>
-          <CardDescription>Sipariş numarası, müşteri adı veya dosya adına göre arayın. İş akışı aşamasına göre filtreleyin.</CardDescription>
+          <CardTitle>Siparis ara</CardTitle>
+          <CardDescription>
+            Siparis numarasi, musteri adi veya dosya adina gore arayin. Is akis
+            asamasina gore filtreleyin.
+          </CardDescription>
         </div>
 
         <form className="grid gap-3 lg:grid-cols-[1fr_auto]">
           <input
             name="q"
             defaultValue={params.q}
-            placeholder="Sipariş numarası, müşteri adı, dosya adı"
+            placeholder="Siparis numarasi, musteri adi, dosya adi"
             className="h-11 rounded-xl border border-slate-200 bg-white px-4 dark:border-slate-700 dark:bg-slate-950"
           />
-          <button className="rounded-xl bg-cyan-500 px-4 font-semibold text-slate-950">Ara</button>
+          <button className="rounded-xl bg-cyan-500 px-4 font-semibold text-slate-950">
+            Ara
+          </button>
         </form>
 
         <div className="mt-4 flex flex-wrap gap-2">
@@ -106,23 +118,27 @@ export default async function AdminOrdersPage({
       <Card>
         <div className="mb-4 flex items-center justify-between">
           <div>
-            <CardTitle>Siparişler</CardTitle>
-            <CardDescription>Yüklemeleri inceleyin, iş akışı durumunu güncelleyin, notları görüntüleyin ve asıl dosyaları indirin.</CardDescription>
+            <CardTitle>Siparisler</CardTitle>
+            <CardDescription>
+              Yuklemeleri inceleyin, is akisi durumunu guncelleyin, notlari
+              goruntuleyin ve asil dosyalari indirin.
+            </CardDescription>
           </div>
-          <Badge variant="info">{orders.length} sonuç</Badge>
+          <Badge variant="info">{orders.length} sonuc</Badge>
         </div>
 
-        <Table>
+        <Table className="min-w-[78rem]">
           <THead>
             <TR>
-              <TH>Sipariş</TH>
-              <TH>Müşteri</TH>
-              <TH>Dosya adı</TH>
-              <TH>Yüklenme tarihi</TH>
+              <TH>Siparis</TH>
+              <TH>Musteri</TH>
+              <TH>Dosya adi</TH>
+              <TH>Yuklenme tarihi</TH>
+              <TH>Cozunurluk</TH>
               <TH>Durum</TH>
               <TH>Kredi</TH>
-              <TH>Ayrıntılar</TH>
-              <TH>İşlemler</TH>
+              <TH>Ayrintilar</TH>
+              <TH>Islemler</TH>
             </TR>
           </THead>
           <TBody>
@@ -132,24 +148,35 @@ export default async function AdminOrdersPage({
                 <TD>
                   <div className="space-y-1">
                     <p>{order.user.name}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{order.user.email}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400">
+                      {order.user.email}
+                    </p>
                   </div>
                 </TD>
                 <TD>{order.uploadedFile?.originalFileName ?? "-"}</TD>
                 <TD>{formatDate(order.createdAt)}</TD>
+                <TD>
+                  <ElevationResolutionBadge resolution={order.resolution} />
+                </TD>
                 <TD>
                   <OrderStatusBadge status={order.status} />
                 </TD>
                 <TD>{formatCurrency(order.creditCharged)}</TD>
                 <TD>
                   <div className="space-y-2">
-                    <a href={`/admin/orders/${order.id}`} className="text-cyan-600 hover:text-cyan-500 dark:text-cyan-300">
-                      Ayrıntıları görüntüle
+                    <a
+                      href={`/admin/orders/${order.id}`}
+                      className="text-cyan-600 hover:text-cyan-500 dark:text-cyan-300"
+                    >
+                      Ayrintilari goruntule
                     </a>
                     <div className="text-xs text-slate-500 dark:text-slate-400">
-                      {order._count.statusHistory} geçmiş kaydı, {order._count.notes} not
+                      {order._count.statusHistory} gecmis kaydi, {order._count.notes} not
                     </div>
-                    <Link href={`/api/admin/orders/${order.id}/download`} className="text-cyan-600 hover:text-cyan-500 dark:text-cyan-300">
+                    <Link
+                      href={`/api/admin/orders/${order.id}/download`}
+                      className="text-cyan-600 hover:text-cyan-500 dark:text-cyan-300"
+                    >
                       KML indir
                     </Link>
                   </div>

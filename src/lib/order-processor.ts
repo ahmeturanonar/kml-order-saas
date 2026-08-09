@@ -4,6 +4,7 @@ import path from "node:path";
 import { NotificationType, OrderStatus } from "@prisma/client";
 import { recordAuditLog } from "@/lib/audit";
 import { lookupBatch } from "@/lib/elevation";
+import { normalizeElevationResolution } from "@/lib/elevation-resolution";
 import { orderEmailTemplate } from "@/lib/email-templates";
 import { parseCoordinates } from "@/lib/kml-parser";
 import { logger } from "@/lib/logger";
@@ -18,6 +19,7 @@ type ProcessingOrder = {
   orderNumber: string;
   status: OrderStatus;
   userId: string;
+  resolution: string;
   user: {
     id: string;
     email: string | null;
@@ -62,6 +64,7 @@ async function beginOrderProcessing(orderId: string): Promise<ProcessingOrder | 
         orderNumber: true,
         status: true,
         userId: true,
+        resolution: true,
         user: {
           select: {
             id: true,
@@ -119,6 +122,7 @@ async function beginOrderProcessing(orderId: string): Promise<ProcessingOrder | 
       targetLabel: order.orderNumber,
       metadata: {
         fromStatus: order.status,
+        resolution: order.resolution,
         processor: "SERVER_SIDE",
       },
     });
@@ -140,6 +144,7 @@ async function completeOrderProcessing(params: {
   savedFilePath: string;
   fileName: string;
   fileSize: number;
+  resolution: string;
 }) {
   const completedAt = new Date();
 
@@ -223,6 +228,7 @@ async function completeOrderProcessing(params: {
         previousStatus: order.status,
         fileName: params.fileName,
         fileSize: params.fileSize,
+        resolution: params.resolution,
         processor: "SERVER_SIDE",
       },
     });
@@ -349,7 +355,8 @@ export async function processOrder(orderId: string) {
 
     const xml = await fs.readFile(fileLookup.resolvedPath, "utf8");
     const coordinates = parseCoordinates(xml);
-    const elevations = await lookupBatch(coordinates);
+    const resolution = normalizeElevationResolution(order.resolution);
+    const elevations = await lookupBatch(coordinates, { resolution });
 
     if (elevations.length !== coordinates.length) {
       throw new Error(
@@ -378,6 +385,7 @@ export async function processOrder(orderId: string) {
       savedFilePath,
       fileName,
       fileSize: csvBuffer.byteLength,
+      resolution,
     });
 
     logger.info(
@@ -385,6 +393,7 @@ export async function processOrder(orderId: string) {
         orderId: order.id,
         coordinateCount: coordinates.length,
         resultCount: elevations.length,
+        resolution,
       },
       "Order processed fully on the server",
     );

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { normalizeElevationResolution } from "@/lib/elevation-resolution";
 import { prisma } from "@/lib/prisma";
 import { assertDesktopAgentRequest } from "@/lib/desktop-agent";
 
@@ -33,6 +34,7 @@ export async function GET(request: Request) {
       filename: order.uploadedFile?.originalFileName ?? order.uploadedFile?.fileName ?? "",
       downloadUrl: `${baseUrl}/api/desktop-agent/orders/${order.id}/file`,
       uploadedAt: order.createdAt.toISOString(),
+      resolution: normalizeElevationResolution(order.resolution),
     })),
   );
 }

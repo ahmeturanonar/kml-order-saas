@@ -16,7 +16,11 @@ import { assertRateLimit } from "@/lib/rate-limit";
 import { assertRequestOrigin } from "@/lib/request";
 import { getKmlPrice } from "@/lib/settings";
 import { computeFileHash, deleteStoredFile, saveUploadedKml } from "@/lib/storage";
-import { validateKmlFile } from "@/lib/validations/upload";
+import {
+  UploadValidationError,
+  validateKmlFile,
+  validateUploadResolution,
+} from "@/lib/validations/upload";
 
 export const runtime = "nodejs";
 export const maxDuration = 300;
@@ -33,6 +37,7 @@ export async function POST(request: Request) {
 
     const formData = await request.formData();
     const file = formData.get("file");
+    const resolution = validateUploadResolution(formData.get("resolution"));
 
     if (!(file instanceof File)) {
       return NextResponse.json({ message: "Lutfen bir KML dosyasi secin." }, { status: 400 });
@@ -102,6 +107,7 @@ export async function POST(request: Request) {
           data: {
             orderNumber: `TEMP-${crypto.randomUUID()}`,
             userId: session.user.id,
+            resolution,
             creditCharged: kmlPrice,
             remainingBalanceAfter: updatedUser.creditBalance,
           },
@@ -154,6 +160,7 @@ export async function POST(request: Request) {
           metadata: {
             fileName: file.name,
             charged: kmlPrice,
+            resolution,
             duplicateOfUploadId: duplicate?.id ?? null,
           },
         });
@@ -216,9 +223,19 @@ export async function POST(request: Request) {
     return NextResponse.json({
       message: "KML basariyla yuklendi. Siparis olusturuldu ve otomatik isleme alindi.",
       duplicateMessage,
+      resolution,
     });
   } catch (error) {
     logger.error({ error }, "Upload failed");
+    if (error instanceof UploadValidationError) {
+      return NextResponse.json(
+        {
+          message: error.message,
+        },
+        { status: 400 },
+      );
+    }
+
     return NextResponse.json(
       {
         message: error instanceof Error ? error.message : "Yukleme basarisiz oldu.",

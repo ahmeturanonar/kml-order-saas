@@ -1,4 +1,5 @@
 import { Coordinate } from "./kml-parser";
+import { ElevationResolution } from "./elevation-resolution";
 
 const ELEVATION_API =
   process.env.ELEVATION_API_URL || "http://elevation-engine:8080";
@@ -14,8 +15,6 @@ export type ElevationResult = {
   pixel_x: number;
   pixel_y: number;
 };
-
-export type ElevationResolution = "250m" | "30m";
 
 function getBatchSize() {
   const parsed = Number(process.env.ELEVATION_BATCH_SIZE ?? DEFAULT_BATCH_SIZE);
