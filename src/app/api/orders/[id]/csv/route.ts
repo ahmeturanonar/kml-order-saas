@@ -1,14 +1,24 @@
 import fs from "node:fs/promises";
+import path from "node:path";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 import { authOptions } from "@/lib/auth";
-import { CSV_MIME_TYPE, normalizeGeneratedCsvBuffer } from "@/lib/generated-csv";
+import {
+  GENERATED_FILE_EXTENSION,
+  GENERATED_FILE_MIME_TYPE,
+  normalizeGeneratedCsvBuffer,
+} from "@/lib/generated-csv";
 import { logger } from "@/lib/logger";
 import { buildDownloadHeaders, findExistingStoredFile } from "@/lib/order-files";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+
+function toGeneratedDownloadName(fileName: string) {
+  const baseName = path.basename(fileName, path.extname(fileName));
+  return `${baseName}${GENERATED_FILE_EXTENSION}`;
+}
 
 export async function GET(
   request: Request,
@@ -40,7 +50,7 @@ export async function GET(
     });
 
     if (!order?.generatedFile) {
-      return NextResponse.json({ message: "CSV file not found." }, { status: 404 });
+      return NextResponse.json({ message: "Excel file not found." }, { status: 404 });
     }
 
     if (session.user.role !== "ADMIN" && order.userId !== session.user.id) {
@@ -56,12 +66,12 @@ export async function GET(
           storedFilePath: order.generatedFile.filePath,
           candidatePaths: fileLookup.candidates,
         },
-        "CSV download requested for a generated file that does not exist on disk",
+        "Excel download requested for a generated file that does not exist on disk",
       );
 
       return NextResponse.json(
         {
-          message: "CSV file does not exist on disk.",
+          message: "Excel file does not exist on disk.",
           ...(process.env.NODE_ENV === "development"
             ? {
                 details: {
@@ -79,15 +89,17 @@ export async function GET(
     const fileBuffer = await fs.readFile(fileLookup.resolvedPath);
     const normalizedBuffer = normalizeGeneratedCsvBuffer(fileBuffer);
     const downloadName =
-      order.generatedFile.originalFileName ||
-      order.generatedFile.fileName ||
-      `${order.orderNumber}.csv`;
+      toGeneratedDownloadName(
+        order.generatedFile.originalFileName ||
+          order.generatedFile.fileName ||
+          `${order.orderNumber}${GENERATED_FILE_EXTENSION}`,
+      );
 
-    return new NextResponse(normalizedBuffer, {
+    return new NextResponse(new Uint8Array(normalizedBuffer), {
       status: 200,
       headers: buildDownloadHeaders({
         downloadName,
-        mimeType: order.generatedFile.mimeType || CSV_MIME_TYPE,
+        mimeType: GENERATED_FILE_MIME_TYPE,
         size: normalizedBuffer.byteLength,
       }),
     });
@@ -97,7 +109,7 @@ export async function GET(
         error,
         requestUrl: request.url,
       },
-      "CSV download failed",
+      "Excel download failed",
     );
 
     return NextResponse.json(
@@ -105,7 +117,7 @@ export async function GET(
         message:
           process.env.NODE_ENV === "development" && error instanceof Error
             ? error.message
-            : "Failed to download CSV file.",
+            : "Failed to download Excel file.",
       },
       { status: 500 },
     );

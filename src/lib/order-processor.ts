@@ -11,7 +11,11 @@ import { logger } from "@/lib/logger";
 import { createNotification } from "@/lib/notifications";
 import { findExistingStoredFile } from "@/lib/order-files";
 import { prisma } from "@/lib/prisma";
-import { buildGeneratedCsvBuffer, CSV_MIME_TYPE } from "@/lib/generated-csv";
+import {
+  buildGeneratedCsvBuffer,
+  GENERATED_FILE_EXTENSION,
+  GENERATED_FILE_MIME_TYPE,
+} from "@/lib/generated-csv";
 import { deleteStoredFile, saveGeneratedCsv } from "@/lib/storage";
 
 type ProcessingOrder = {
@@ -174,7 +178,7 @@ async function completeOrderProcessing(params: {
     const originalBaseName = sanitizeBaseName(
       path.basename(params.uploadedOriginalFileName, path.extname(params.uploadedOriginalFileName)),
     );
-    const originalFileName = `${originalBaseName || params.orderNumber.replace(/[^a-zA-Z0-9-_]+/g, "-") || "order-result"}.csv`;
+    const originalFileName = `${originalBaseName || params.orderNumber.replace(/[^a-zA-Z0-9-_]+/g, "-") || "order-result"}${GENERATED_FILE_EXTENSION}`;
     const transitionedToCompleted = order.status !== OrderStatus.COMPLETED;
 
     await tx.generatedFile.upsert({
@@ -183,7 +187,7 @@ async function completeOrderProcessing(params: {
         fileName: params.fileName,
         originalFileName,
         filePath: params.savedFilePath,
-        mimeType: CSV_MIME_TYPE,
+        mimeType: GENERATED_FILE_MIME_TYPE,
         fileSize: params.fileSize,
       },
       create: {
@@ -192,7 +196,7 @@ async function completeOrderProcessing(params: {
         fileName: params.fileName,
         originalFileName,
         filePath: params.savedFilePath,
-        mimeType: CSV_MIME_TYPE,
+        mimeType: GENERATED_FILE_MIME_TYPE,
         fileSize: params.fileSize,
       },
     });
@@ -212,7 +216,7 @@ async function completeOrderProcessing(params: {
           orderId: params.orderId,
           fromStatus: order.status,
           toStatus: OrderStatus.COMPLETED,
-          note: "Order was processed automatically on the server and the CSV result was generated.",
+          note: "Order was processed automatically on the server and the Excel result was generated.",
         },
       });
     }
@@ -250,7 +254,7 @@ async function completeOrderProcessing(params: {
           orderId: params.orderId,
           previousGeneratedFilePath: result.previousGeneratedFilePath,
         },
-        "Failed to remove previous generated CSV after server-side replacement",
+        "Failed to remove previous generated Excel file after server-side replacement",
       );
     });
   }
@@ -258,7 +262,7 @@ async function completeOrderProcessing(params: {
   if (result.transitionedToCompleted) {
     const emailTemplate = orderEmailTemplate({
       title: `${params.orderNumber} numarali siparis tamamlandi`,
-      message: `${params.orderNumber} numarali siparisiniz tamamlandi. CSV sonuc dosyaniz indirilmeye hazir.`,
+      message: `${params.orderNumber} numarali siparisiniz tamamlandi. Excel sonuc dosyaniz indirilmeye hazir.`,
       orderNumber: params.orderNumber,
     });
 
@@ -267,7 +271,7 @@ async function completeOrderProcessing(params: {
       email: params.userEmail ?? undefined,
       type: NotificationType.ORDER_STATUS,
       title: `${params.orderNumber} numarali siparis tamamlandi`,
-      message: `${params.orderNumber} numarali siparisiniz tamamlandi. CSV sonuc dosyaniz indirilmeye hazir.`,
+      message: `${params.orderNumber} numarali siparisiniz tamamlandi. Excel sonuc dosyaniz indirilmeye hazir.`,
       emailSubject: emailTemplate.subject,
       emailHtml: emailTemplate.html,
       linkPath: "/dashboard/orders",
@@ -368,7 +372,7 @@ export async function processOrder(orderId: string) {
     const originalBaseName = sanitizeBaseName(
       path.basename(order.uploadedFile.originalFileName, path.extname(order.uploadedFile.originalFileName)),
     );
-    const fileName = `${Date.now()}-${originalBaseName || "order-result"}-${crypto.randomUUID()}.csv`;
+    const fileName = `${Date.now()}-${originalBaseName || "order-result"}-${crypto.randomUUID()}${GENERATED_FILE_EXTENSION}`;
 
     savedFilePath = await saveGeneratedCsv({
       userId: order.userId,

@@ -41,7 +41,7 @@ function CsvAction({
   if (hasGeneratedFile) {
     return (
       <a href={`/api/orders/${orderId}/csv`} className={actionClassName}>
-        CSV indir
+        Excel indir
       </a>
     );
   }
@@ -117,7 +117,7 @@ export function OrderList({
               <TH>Durum</TH>
               <TH>Harcanan</TH>
               {isFull ? <TH>Kalan bakiye</TH> : null}
-              <TH>CSV</TH>
+              <TH>Excel</TH>
             </TR>
           </THead>
           <TBody>
@@ -197,7 +197,7 @@ export function OrderList({
 
               <div className="pt-1">
                 <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500 dark:text-slate-400">
-                  CSV
+                  Excel
                 </p>
                 <CsvAction
                   orderId={order.id}
