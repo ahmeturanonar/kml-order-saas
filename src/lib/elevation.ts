@@ -15,6 +15,8 @@ export type ElevationResult = {
   pixel_y: number;
 };
 
+export type ElevationResolution = "250m" | "30m";
+
 function getBatchSize() {
   const parsed = Number(process.env.ELEVATION_BATCH_SIZE ?? DEFAULT_BATCH_SIZE);
 
@@ -25,7 +27,10 @@ function getBatchSize() {
   return Math.floor(parsed);
 }
 
-async function lookupChunk(points: Coordinate[]): Promise<ElevationResult[]> {
+async function lookupChunk(
+  points: Coordinate[],
+  resolution?: ElevationResolution,
+): Promise<ElevationResult[]> {
   const response = await fetch(`${ELEVATION_API}/lookup-batch`, {
     method: "POST",
     headers: {
@@ -33,6 +38,7 @@ async function lookupChunk(points: Coordinate[]): Promise<ElevationResult[]> {
     },
     body: JSON.stringify({
       points,
+      ...(resolution ? { resolution } : {}),
     }),
     cache: "no-store",
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
@@ -51,12 +57,15 @@ async function lookupChunk(points: Coordinate[]): Promise<ElevationResult[]> {
   return json.results ?? [];
 }
 
-async function lookupChunkWithRetry(points: Coordinate[]) {
+async function lookupChunkWithRetry(
+  points: Coordinate[],
+  resolution?: ElevationResolution,
+) {
   let lastError: unknown;
 
   for (let attempt = 1; attempt <= MAX_BATCH_RETRIES; attempt += 1) {
     try {
-      return await lookupChunk(points);
+      return await lookupChunk(points, resolution);
     } catch (error) {
       lastError = error;
 
@@ -73,6 +82,9 @@ async function lookupChunkWithRetry(points: Coordinate[]) {
 
 export async function lookupBatch(
   points: Coordinate[],
+  options?: {
+    resolution?: ElevationResolution;
+  },
 ): Promise<ElevationResult[]> {
   if (points.length === 0) {
     return [];
@@ -83,7 +95,7 @@ export async function lookupBatch(
 
   for (let index = 0; index < points.length; index += batchSize) {
     const chunk = points.slice(index, index + batchSize);
-    const chunkResults = await lookupChunkWithRetry(chunk);
+    const chunkResults = await lookupChunkWithRetry(chunk, options?.resolution);
     results.push(...chunkResults);
   }
 
